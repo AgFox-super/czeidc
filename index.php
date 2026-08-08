@@ -51,6 +51,7 @@ $boot = array(
             <?php if ($logo): ?><img class="brand-logo" src="<?php echo h($logo); ?>" alt="" onerror="this.style.display='none'"><?php endif; ?>
             <span class="brand-name"><?php echo h($site); ?></span>
         </a>
+        <button class="nav-toggle" id="navToggle" aria-label="菜单"><span></span><span></span><span></span></button>
         <nav class="nav" id="nav">
             <a href="#/" data-nav="home">首页</a>
             <a href="#/products" data-nav="products">我的产品</a>

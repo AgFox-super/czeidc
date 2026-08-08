@@ -24,7 +24,7 @@ $boot = array(
 </head>
 <body class="admin-body">
 <div class="admin-layout" id="adminLayout" style="display:none">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand"><?php echo h($site); ?><small>管理后台</small></div>
         <nav class="sidebar-nav" id="adminNav">
             <a href="#/dashboard" data-nav="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>仪表盘</span></a>
@@ -40,14 +40,19 @@ $boot = array(
     </aside>
     <div class="admin-main">
         <header class="admin-topbar">
-            <span id="adminPageTitle">仪表盘</span>
+            <div style="display:flex;align-items:center;gap:10px">
+                <button class="nav-toggle" id="adminNavToggle" aria-label="菜单"><span></span><span></span><span></span></button>
+                <span id="adminPageTitle">仪表盘</span>
+            </div>
             <div class="admin-user">
                 <span id="adminUserName"></span>
+                <a href="javascript:;" id="btnChgPwd">修改密码</a>
                 <a href="javascript:;" id="btnLogout">退出</a>
             </div>
         </header>
         <main id="view" class="container admin-view"></main>
     </div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 </div>
 <div id="loginView" class="admin-login" style="display:none">
     <div class="card" style="max-width:380px">

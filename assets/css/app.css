@@ -23,6 +23,18 @@ a:hover{color:var(--primary-dark)}
 .nav-right{display:flex;align-items:center;gap:10px;font-size:14px}
 .nav-right .email{color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
+/* 汉堡菜单按钮（移动端导航/侧边栏开关） */
+.nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:8px;flex-direction:column;gap:4px;border-radius:8px;transition:background .15s}
+.nav-toggle:hover{background:#f3f4f6}
+.nav-toggle span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:transform .2s,opacity .2s}
+.nav-toggle.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+/* 后台抽屉遮罩 */
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:59;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.sidebar-backdrop.open{opacity:1;pointer-events:auto}
+
 /* 布局 */
 .container{max-width:1080px;margin:0 auto;padding:24px 16px;width:100%;flex:1}
 .footer{text-align:center;color:#9ca3af;font-size:12px;padding:24px 0}
@@ -173,11 +185,39 @@ td.wrap{white-space:normal}
 .code-input input{flex:1}
 .countdown{color:var(--muted);font-size:13px;white-space:nowrap}
 
+/* ============ 响应式（移动端优先适配） ============ */
 @media (max-width:768px){
-  .topbar-inner{height:auto;flex-wrap:wrap;padding:10px 12px;gap:8px}
-  .nav{order:3;width:100%;overflow-x:auto}
-  .sidebar{display:none}
+  .topbar-inner{height:56px;padding:0 12px;gap:10px;flex-wrap:nowrap}
+  .nav-toggle{display:flex}
+  .nav{position:fixed;top:56px;left:0;right:0;background:#fff;flex-direction:column;padding:8px 12px;box-shadow:0 8px 24px rgba(0,0,0,.1);border-bottom:1px solid var(--border);display:none;max-height:calc(100vh - 56px);overflow-y:auto;z-index:70}
+  .nav.open{display:flex}
+  .nav a{padding:10px 12px;border-radius:8px}
+  .nav-right .email{display:none}
+  /* 后台：侧边栏变抽屉 */
+  .sidebar{display:flex;transform:translateX(-100%);transition:transform .25s ease;z-index:60}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-backdrop{display:block}
   .admin-main{margin-left:0}
-  .admin-topbar{padding:0 14px}
+  .admin-topbar{padding:0 12px}
   .container{padding:16px 12px}
+  .hero{padding:24px 18px}
+  .hero h1{font-size:20px}
+  .modal-mask{padding:24px 12px}
+  .modal-box{padding:18px;max-width:100%}
+  .auth-wrap{margin:24px auto}
+  .stat .num{font-size:20px}
+  .plan-card{padding:16px}
+  th,td{padding:8px 10px}
+  .table-wrap{-webkit-overflow-scrolling:touch}
+  .admin-topbar span{font-size:14px}
+}
+@media (max-width:480px){
+  .brand-name{font-size:15px}
+  .btn{padding:8px 12px}
+  .radio-group label{min-width:70px;padding:8px 10px}
+  .card{padding:14px}
+  .admin-user{font-size:12px;gap:8px}
+  .stat-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+  .kv{font-size:13px}
+  .msg-item{max-width:92%}
 }

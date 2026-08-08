@@ -69,6 +69,48 @@
         };
     }
 
+    /* ---------- 移动端侧边栏抽屉 ---------- */
+    function closeSidebar() {
+        $('#sidebar').classList.remove('open');
+        $('#sidebarBackdrop').classList.remove('open');
+        $('#adminNavToggle').classList.remove('open');
+    }
+    function toggleSidebar() {
+        var open = $('#sidebar').classList.toggle('open');
+        $('#sidebarBackdrop').classList.toggle('open', open);
+        $('#adminNavToggle').classList.toggle('open', open);
+    }
+    function bindSidebar() {
+        $('#adminNavToggle').onclick = toggleSidebar;
+        $('#sidebarBackdrop').onclick = closeSidebar;
+        // 点击导航项后自动收起（移动端）
+        document.querySelectorAll('#adminNav a').forEach(function (a) {
+            a.addEventListener('click', closeSidebar);
+        });
+    }
+
+    /* ---------- 修改管理员密码 ---------- */
+    function showChgPwd() {
+        showModal(modalTitle('修改管理员密码', '')
+            + '<label>原密码</label><input type="password" id="aOldPwd" autocomplete="current-password">'
+            + '<label>新密码 <span class="hint">(至少6位)</span></label><input type="password" id="aNewPwd" autocomplete="new-password">'
+            + '<label>确认新密码</label><input type="password" id="aNewPwd2" autocomplete="new-password">'
+            + '<div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">取消</button><button class="btn" id="btnChgPwdOk">确认修改</button></div>');
+        $('#btnChgPwdOk').onclick = function () {
+            var oldP = $('#aOldPwd').value;
+            var newP = $('#aNewPwd').value;
+            var newP2 = $('#aNewPwd2').value;
+            if (!oldP || !newP) { toast('请填写原密码和新密码', 'err'); return; }
+            if (newP.length < 6) { toast('新密码至少6位', 'err'); return; }
+            if (newP !== newP2) { toast('两次输入的新密码不一致', 'err'); return; }
+            api('admin_changepwd', { old: oldP, new: newP }).then(function () {
+                closeModal();
+                toast('密码已修改');
+                $('#aOldPwd').value = ''; $('#aNewPwd').value = ''; $('#aNewPwd2').value = '';
+            }).catch(function (e) { toast(e.message, 'err'); });
+        };
+    }
+
     /* ---------- 路由 ---------- */
     var titles = { dashboard: '仪表盘', servers: '服务器', plans: '产品方案', zjmf: '魔方上游', orders: '订单', products: '产品', users: '用户', tickets: '工单', settings: '系统设置' };
     function route() {
@@ -555,17 +597,33 @@
             var html = '<div class="table-wrap"><table><thead><tr><th>ID</th><th>邮箱</th><th>状态</th><th>注册时间</th><th>操作</th></tr></thead><tbody>';
             list.forEach(function (u) {
                 html += '<tr><td>' + u.id + '</td><td>' + esc(u.email) + '</td><td>' + badge(u.status, { 1: ['ok', '正常'], 0: ['err', '禁用'] }) + '</td><td>' + fmt(u.created_at) + '</td>'
-                    + '<td><a href="javascript:;" data-act="login" data-id="' + u.id + '">以客户登陆</a> | <a href="javascript:;" data-id="' + u.id + '" data-s="' + u.status + '" style="' + (u.status == 1 ? 'color:var(--danger)' : '') + '">' + (u.status == 1 ? '禁用' : '启用') + '</a></td></tr>';
+                    + '<td><a href="javascript:;" data-act="login" data-id="' + u.id + '">以客户登陆</a> | <a href="javascript:;" data-act="pwd" data-id="' + u.id + '" data-email="' + esc(u.email) + '">改密</a> | <a href="javascript:;" data-id="' + u.id + '" data-s="' + u.status + '" style="' + (u.status == 1 ? 'color:var(--danger)' : '') + '">' + (u.status == 1 ? '禁用' : '启用') + '</a></td></tr>';
             });
             html += '</tbody></table></div>';
             if (target) { target.outerHTML = html; }
             box.querySelectorAll('a[data-act]').forEach(function (a) {
                 a.onclick = function () {
+                    var act = a.getAttribute('data-act');
                     var id = parseInt(a.getAttribute('data-id'), 10);
-                    api('user_login_as', { id: id }).then(function (d) {
-                        window.open(d.url, '_blank');
-                        toast('已以 ' + d.email + ' 的身份打开前台（新标签页）');
-                    }).catch(function (e) { toast(e.message, 'err'); });
+                    if (act === 'login') {
+                        api('user_login_as', { id: id }).then(function (d) {
+                            window.open(d.url, '_blank');
+                            toast('已以 ' + d.email + ' 的身份打开前台（新标签页）');
+                        }).catch(function (e) { toast(e.message, 'err'); });
+                    } else if (act === 'pwd') {
+                        showModal(modalTitle('强制修改用户密码', '')
+                            + '<div class="hint" style="margin-bottom:6px">为用户 <b>' + esc(a.getAttribute('data-email') || ('#' + id)) + '</b> 设置新密码，保存后该用户需用新密码登录</div>'
+                            + '<label>新密码 <span class="hint">(6-32位)</span></label><input type="text" id="upwd" autocomplete="new-password" placeholder="请输入新密码">'
+                            + '<div class="modal-actions"><button class="btn ghost" onclick="window.__closeModal()">取消</button><button class="btn" id="btnUpwdOk">确认修改</button></div>');
+                        $('#btnUpwdOk').onclick = function () {
+                            var v = $('#upwd').value.trim();
+                            if (v.length < 6 || v.length > 32) { toast('密码长度需在6-32位', 'err'); return; }
+                            api('user_changepwd', { id: id, pwd: v }).then(function (d) {
+                                closeModal();
+                                toast('已为用户 ' + d.email + ' 重置密码');
+                            }).catch(function (e) { toast(e.message, 'err'); });
+                        };
+                    }
                 };
             });
             box.querySelectorAll('a[data-id]').forEach(function (a) {
@@ -712,6 +770,8 @@
         $('#btnLogout').onclick = function () {
             api('logout').then(function () { location.reload(); });
         };
+        $('#btnChgPwd').onclick = showChgPwd;
+        bindSidebar();
         window.addEventListener('hashchange', route);
         route();
     }

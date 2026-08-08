@@ -95,12 +95,44 @@ class SmtpMailer
         return $code;
     }
 
+    /**
+     * RFC 2047 编码邮件头字段（Subject / From 名称）
+     * - 纯 ASCII 直接返回（避免多余编码）
+     * - 非 ASCII 用 =?UTF-8?B?...?= 编码，超过 75 字符自动折行（RFC 2047 规定 encoded-word 最长 75 字符，
+     *   超长不折行会导致部分邮件客户端/网关解析错乱、标题显示乱码）
+     * - 过滤 \r\n，防止邮件头注入
+     */
+    private function encodeHeader($str) {
+        $str = str_replace(array("\r", "\n"), '', (string)$str);
+        if ($str === '') { return ''; }
+        if (preg_match('/^[\x20-\x7E]*$/', $str) && strpos($str, '=?') === false) {
+            return $str;
+        }
+        $b64 = base64_encode($str);
+        $prefix = '=?UTF-8?B?';
+        $suffix = '?=';
+        // 单个 encoded-word 上限 75 字符，按 4 的倍数切分（base64 每 4 字符一组）
+        $chunk = (int)((75 - strlen($prefix) - strlen($suffix)) / 4) * 4;
+        if ($chunk < 4) { $chunk = 4; }
+        $parts = str_split($b64, $chunk);
+        if (count($parts) === 1) {
+            return $prefix . $b64 . $suffix;
+        }
+        $out = '';
+        foreach ($parts as $i => $p) {
+            $out .= ($i > 0 ? "\r\n " : '') . $prefix . $p . $suffix;
+        }
+        return $out;
+    }
+
     private function buildMessage($to, $subject, $htmlBody) {
-        $fromName = $this->fromName !== '' ? $this->fromName : $this->from;
         $headers = '';
-        $headers .= 'From: =?UTF-8?B?' . base64_encode($fromName) . "?= <" . $this->from . ">\r\n";
+        // From：名称为空时直接使用邮箱，避免生成 =?UTF-8?B??= 的非法头
+        $fromName = $this->fromName !== '' ? $this->fromName : '';
+        $fromHeader = $this->encodeHeader($fromName);
+        $headers .= 'From: ' . ($fromHeader !== '' ? $fromHeader . ' <' . $this->from . '>' : '<' . $this->from . '>') . "\r\n";
         $headers .= 'To: <' . $to . ">\r\n";
-        $headers .= 'Subject: =?UTF-8?B?' . base64_encode($subject) . "?\r\n";
+        $headers .= 'Subject: ' . $this->encodeHeader($subject) . "\r\n";
         $headers .= 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-Type: text/html; charset=UTF-8' . "\r\n";
         $headers .= 'Content-Transfer-Encoding: base64' . "\r\n";

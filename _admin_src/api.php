@@ -64,6 +64,19 @@ try {
             ok($a ? array('id' => (int)$a['id'], 'username' => $a['username']) : null);
             break;
 
+        /* ---------- 修改管理员密码 ---------- */
+        case 'admin_changepwd':
+            require_admin();
+            $old = req('old');
+            $new = req('new');
+            if (strlen($new) < 6) { fail('新密码至少6位'); }
+            $a = current_admin();
+            if (!password_verify($old, $a['password'])) { fail('原密码不正确'); }
+            $st = db()->prepare('UPDATE ' . t('admin') . ' SET password = ? WHERE id = ?');
+            $st->execute(array(password_hash($new, PASSWORD_DEFAULT), (int)$a['id']));
+            ok();
+            break;
+
         /* ---------- 仪表盘 ---------- */
         case 'stats':
             require_admin();
@@ -440,6 +453,21 @@ try {
                 'url' => root_url() . '/index.php?login_as=' . $id . '.' . $exp . '.' . $sig,
                 'email' => $u['email'],
             ));
+            break;
+
+        case 'user_changepwd':
+            // 管理员强制重置用户密码（改后用户需用新密码登录）
+            require_admin();
+            $id = (int)req('id');
+            $pwd = req('pwd');
+            if (strlen($pwd) < 6 || strlen($pwd) > 32) { fail('密码长度需在6-32位'); }
+            $st = db()->prepare('SELECT id, email, status FROM ' . t('users') . ' WHERE id = ?');
+            $st->execute(array($id));
+            $u = $st->fetch();
+            if (!$u) { fail('用户不存在'); }
+            $st = db()->prepare('UPDATE ' . t('users') . ' SET password = ? WHERE id = ?');
+            $st->execute(array(password_hash($pwd, PASSWORD_DEFAULT), $id));
+            ok(array('email' => $u['email']));
             break;
 
         /* ---------- 工单 ---------- */

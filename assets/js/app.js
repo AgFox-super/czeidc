@@ -419,6 +419,22 @@
     }
 
     /* ---------- 启动 ---------- */
+    // 移动端汉堡菜单开关
+    var navToggle = $('#navToggle');
+    if (navToggle) {
+        navToggle.onclick = function () {
+            var nav = $('#nav');
+            var open = nav.classList.toggle('open');
+            navToggle.classList.toggle('open', open);
+        };
+        // 点击菜单项后自动收起（移动端）
+        $('#nav').addEventListener('click', function (e) {
+            if (e.target.tagName === 'A') {
+                $('#nav').classList.remove('open');
+                navToggle.classList.remove('open');
+            }
+        });
+    }
     renderNavRight();
     window.addEventListener('hashchange', route);
     route();
