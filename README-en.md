@@ -18,6 +18,8 @@ Upload the files and visit `http://your-domain`; it will automatically redirect 
 
 Access `http://your-domain/<your-admin-path>` and log in using the administrator credentials. After logging in, configure the payment settings, SMTP, and the upstream API URL for MagicCube Finance. Note: Using the Baota (BT) Panel API for integration is strongly discouraged due to potential security risks. It is highly recommended to integrate with a self-hosted EP Panel; integration with MagicCube Finance is the second-best option (though it has a minor bug).
 
+This system is currently available only in Simplified Chinese.
+
 ### Disclaimer: This system is completely free; secondary development and redistribution are permitted. If you obtained this system by purchasing it, congratulations—you have been scammed.
 
 ### If you have any questions or feedback, please email: admin@mcedm.top. Thank you for using this system!
