@@ -2,7 +2,7 @@
 
 github项目地址:https://github.com/AgFox-super/czeidc
 
-演示站地址https://demo.mcedm.top/admin 用户名admin 密码123456
+演示站地址http://demo.mcedm.top/admin 用户名admin 密码123456
 
 基于 PHP 7.2 + MySQL 的虚拟主机在线订购系统：用户邮箱注册、在线选购方案、易支付（支付宝/微信）下单、支付后自动调用魔方财务/ep面板 API 开通主机、独立后台入口、内置简单工单系统。前台全程 AJAX 无刷新，
 
